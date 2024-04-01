@@ -6,8 +6,8 @@
   </div>
   <form action="/autoriz" method="post" class="autorizat">
     <input type="hidden" name="_token" :value="codeToken">
-    <input type="text" name="number" placeholder="Телефон">
-    <input type="password" name="password" placeholder="Пароль">
+    <input type="text" name="number" placeholder="Телефон" required>
+    <input type="password" name="password" placeholder="Пароль" required>
     <input type="submit" value="Войти">
   </form>
 </section>

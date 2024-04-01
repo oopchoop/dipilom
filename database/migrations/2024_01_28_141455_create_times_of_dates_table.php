@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('doctor_id')->unsigned();
             $table->bigInteger('times_id')->unsigned();
+            $table->bigInteger('user_id')->unsigned()->nullable();
             $table->boolean('busy')->default(false);
             $table->date('date');
             $table->foreign('doctor_id')
@@ -22,6 +23,9 @@ return new class extends Migration
                 ->references('id');
             $table->foreign('times_id')
                 ->on('times')
+                ->references('id');
+            $table->foreign('user_id')
+                ->on('users')
                 ->references('id');
             $table->timestamps(
             );

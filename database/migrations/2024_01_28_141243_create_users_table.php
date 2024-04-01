@@ -13,11 +13,16 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('doctor_id')->unsigned()->nullable();
             $table->string('full_name');
-            $table->date('birthday');
+            $table->date('birthday')->nullable();
             $table->string('number')->unique();
             $table->string('password');
             $table->boolean('isAdmin')->default(false);
+            $table->boolean('isDoctor')->default(false);
+            $table->foreign('doctor_id')
+                ->on('doctors')
+                ->references('id');
             $table->rememberToken();
             $table->timestamps();
         });

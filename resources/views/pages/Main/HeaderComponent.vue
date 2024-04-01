@@ -5,8 +5,11 @@
     <div class="right-header">
       <div class="click">
         <router-link to="/doctors" v-if="!inforamtionUser['isAdmin']"><button class="appointment">Записаться к врачу</button></router-link>
-        <router-link to="/adminsch" v-else><button class="appointment">Администратор</button></router-link>
+        <div style="width: 185px;" v-else></div>
         <router-link to="/autorization" v-if="!inforamtionUser">
+          <img src="/public/images/Account.png" alt="Вход">
+        </router-link>
+        <router-link to="/adminsch" v-else-if="inforamtionUser['isAdmin']">
           <img src="/public/images/Account.png" alt="Вход">
         </router-link>
         <router-link to="/profile" v-else>

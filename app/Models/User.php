@@ -22,7 +22,9 @@ class User extends Authenticatable
         'birthday',
         'number',
         'password',
-        'isAdmin'
+        'isAdmin',
+        'isDoctor',
+        'doctor_id'
     ];
 
     /**

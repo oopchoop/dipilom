@@ -5,39 +5,42 @@
       <a href="/logout" class="logout">Выход</a>
     </div>
     <div class="menu-user">
-      <router-link to="/profile"class="personal">Личные данные</router-link>
-      <router-link to="/userrecords"class="records">Записи на прием </router-link>
+      <router-link to="/profile" class="personal">Личные данные</router-link>
+      <router-link to="/userrecords" class="records">Записи на прием </router-link>
     </div>
     <div class="cards-record">
-      <div class="card">
+      <div class="card" v-for="record in activeRecordsInfo">
         <div class="top">
           <div class="date-time">
-            <p class="date">25.06</p>
-            <p class="time">10:30</p>
+            <p class="date">{{record['date'].split('-')[2] + '.' + record['date'].split('-')[1]}}</p>
+            <p class="time">{{record['time']}}</p>
           </div>
           <p class="status-on">Активна</p>
         </div>
         <div class="info">
           <div class="title">Врач</div>
           <div class="info-doctor">
-            <p class="unit">Терапевт</p>
-            <p class="name">Смирнова Дарья Олеговна</p>
+            <p class="unit">{{ record['doctor_type_name'] }}</p>
+            <p class="name">{{ record['doctor_name'] }}</p>
           </div>
         </div>
-        <button>Отменить запись</button>
+        <a :href="`/reject/${record['id']}`">
+          <button>Отменить запись</button>
+        </a>
       </div>
-      <div class="card" v-for="record in recordsInfo">
+      <div class="card" v-for="record in lostRecordsInfo">
         <div class="top">
           <div class="date-time">
-            <p class="date">{{ record['date'] }}</p>
+            <p class="date">{{record['date'].split('-')[2] + '.' + record['date'].split('-')[1]}}</p>
+            <p class="time">{{record['time']}}</p>
           </div>
           <p class="status-off">Прошла</p>
         </div>
         <div class="info">
           <div class="title">Врач</div>
           <div class="info-doctor">
-            <p class="unit">{{ record['type_name'] }}</p>
-            <p class="name">{{ record['full_name'] }}</p>
+            <p class="unit">{{ record['doctor_type_name'] }}</p>
+            <p class="name">{{ record['doctor_name'] }}</p>
           </div>
         </div>
       </div>
@@ -54,12 +57,24 @@ export default defineComponent(
       data: () => {
         return {
           informationUser: {},
-          recordsInfo: []
+          lostRecordsInfo: [],
+          activeRecordsInfo: []
         }
       },
       mounted() {
-          axios.get('/user').then(response => {this.informationUser = response.data})
-          axios.get('/getForUser').then(response => {this.recordsInfo = response.data})
+          axios.get('/user').then(response => {
+            this.informationUser = response.data
+
+            axios.get(`/getLostUserRecords/${this.informationUser['id']}`).then(resp => {
+              this.lostRecordsInfo = resp.data
+
+              console.log(this.lostRecordsInfo)
+            })
+            axios.get(`/getActiveUserRecords/${this.informationUser['id']}`).then(resp => {
+              this.activeRecordsInfo = resp.data
+            })
+          })
+
       }
     }
 )
@@ -80,13 +95,13 @@ export default defineComponent(
 }
 
 .user .menu-user .personal{
-  color: #719FE7;
   text-decoration: none;
   font-size: 18px;
+  color: #7A8FAD;
 }
 .user .menu-user .records{
   text-decoration: none;
-  color: #7A8FAD;
+  color: #719FE7;
   font-size: 18px;
 }
 
@@ -94,6 +109,7 @@ export default defineComponent(
   display: flex;
   gap: 37px;
   margin-top: 51px;
+  flex-wrap: wrap;
 }
 .user .cards-record .card{
   padding: 36px 28px;

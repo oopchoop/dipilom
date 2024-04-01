@@ -5,15 +5,15 @@
       <a href="/logout" class="logout">Выход</a>
     </div>
     <div class="menu-user">
-      <router-link to="/adminsch" class="personal select">Расписание</router-link>
+      <router-link to="/adminsch" class="personal">Расписание</router-link>
       <router-link to="/admintic" class="personal">Записи на прием</router-link>
-      <router-link to="/admindoc" class="personal">Добавить врача</router-link>
+      <router-link to="/admindoc" class="personal select">Добавить врача</router-link>
     </div>
-    <form action="/makeDate" method="post" class="personal-data" enctype="multipart/form-data">
+    <form action="/makeDoctor" method="post" class="personal-data" enctype="multipart/form-data">
       <input type="hidden" name="_token" :value="codeToken">
       <div class="form-group">
         <p>Выберите специализацию</p>
-        <select name="special_id" id="special_id" v-on:change="changeType" required>
+        <select name="doctor_special_id" id="special_id">
           <option value="1">Терапевт</option>
           <option value="2">Гинеколог</option>
           <option value="3">Кардиолог</option>
@@ -24,15 +24,25 @@
       </div>
       <div class="form-group">
         <p>ФИО врача</p>
-        <select name="doctor_id" id="doctor_id" v-on:change="changeDoctor" required>
-          <option v-for="doctor in doctors" :value="doctor['id']">{{ doctor['full_name'] }}</option>
-        </select>
+        <input type="text" name="doctor_name" placeholder="ФИО">
       </div>
       <div class="form-group">
-        <p>Выберите дату</p>
-        <input type="text" name="date" placeholder="Дата" onfocus="(this.type='date')" required>
+        <p>Фото</p>
+        <input type="file" name="doctor_photo">
       </div>
-      <input type="submit" value="Добавить время">
+      <div class="form-group">
+        <p>Стаж</p>
+        <input type="number" name="doctor_experience" placeholder="Стаж">
+      </div>
+      <div class="form-group">
+        <p>Номер телефона</p>
+        <input type="text" name="doctor_number" placeholder="Номер тел.">
+      </div>
+      <div class="form-group">
+        <p>Пароль</p>
+        <input type="password" name="doctor_password" placeholder="Пароль">
+      </div>
+      <input type="submit" value="Добавить врача">
     </form>
   </section>
 </template>
@@ -52,7 +62,7 @@ export default defineComponent({
     }
   },
   mounted(){
-    axios.get(`/getDoctorWithType/1`).then(response => {this.doctors = response.data})
+    axios.get('/getAllDoctors').then(response => {this.doctors = response.data})
   },
   methods: {
     changeDoctor() {
@@ -74,14 +84,6 @@ export default defineComponent({
     },
     changeDate(id) {
       axios.get(`/getDateInfo/${id}`).then(response => {this.times = response.data})
-    },
-    changeType(e){
-      let current = e.target
-      let typeId = current.value
-
-      console.log(typeId)
-
-      axios.get(`/getDoctorWithType/${typeId}`).then(response => {this.doctors = response.data})
     }
   }
 })

@@ -6,11 +6,11 @@
     </div>
     <form action="/registr" method="post" class="registration">
       <input type="hidden" name="_token" :value="codeToken">
-      <input type="text" name="full_name" placeholder="ФИО">
-      <input type="text" name="birthday" placeholder="Дата рождения" onfocus="(this.type='date')">
-      <input type="text" name="number" placeholder="Телефон">
-      <input type="password" name="password" placeholder="Пароль">
-      <input type="password" name="password_confirmation" placeholder="Повторите пароль">
+      <input type="text" name="full_name" placeholder="ФИО" required>
+      <input type="text" name="birthday" placeholder="Дата рождения" onfocus="(this.type='date')" required>
+      <input type="text" name="number" placeholder="Телефон" required>
+      <input type="password" name="password" placeholder="Пароль" required>
+      <input type="password" name="password_confirmation" placeholder="Повторите пароль" required>
       <input type="submit" value="Зарегистрироваться">
     </form>
   </section>
@@ -50,9 +50,9 @@ export default defineComponent({
   text-decoration: none;
   color: #0F2B56;
   font-size: 24px;
+  font-weight: bold;
 }
 .form .auto-reg .autorization-title{
-  font-weight: bold;
   text-decoration: none;
   color: #0F2B56;
   font-size: 24px;

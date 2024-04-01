@@ -13,6 +13,8 @@ import Gastroenterologist from "../views/pages/Gastroenterologist.vue";
 import Surgeon from "../views/pages/Surgeon.vue";
 import Virologist from "../views/pages/Virologist.vue";
 import AdminSchedules from "../views/pages/Adminschedules.vue";
+import AdminDoctor from "../views/pages/Admindoctor.vue";
+import AdminTickets from "../views/pages/Admintickets.vue";
 
 
 const routes =
@@ -77,6 +79,14 @@ const routes =
         {
             path: '/adminsch',
             component: AdminSchedules
+        },
+        {
+            path: '/admintic',
+            component: AdminTickets
+        },
+        {
+            path: '/admindoc',
+            component: AdminDoctor
         }
 
     ];

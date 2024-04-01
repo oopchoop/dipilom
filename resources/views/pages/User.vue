@@ -1,23 +1,46 @@
 <template>
-  <section class="user">
+  <section class="user" v-if="!informationUser['isDoctor']">
     <div class="top-list">
       <h1>Личный кабинет</h1>
       <a href="/logout" class="logout">Выход</a>
     </div>
     <div class="menu-user">
-      <router-link to="/profile"class="personal">Личные данные</router-link>
-      <router-link to="/userrecords"class="records">Записи на прием </router-link>
+      <router-link to="/profile" class="personal">Личные данные</router-link>
+      <router-link to="/userrecords" class="records">Записи на прием </router-link>
     </div>
     <div class="personal-data">
       <div class="titles">
         <p class="title">ФИО</p>
-        <p class="title">Дата рожденияч</p>
+        <p class="title">Дата рождения</p>
         <p class="title">Телефон</p>
       </div>
       <div class="data">
         <p class="info">{{ informationUser['full_name'] }}</p>
         <p class="info">{{ informationUser['birthday_str'] }}</p>
         <p class="info">{{informationUser['number']}}</p>
+      </div>
+    </div>
+  </section>
+  <section class="user" v-else>
+    <div class="top-list">
+      <h1>{{ informationUser['full_name'].split(' ')[0] + ' ' + informationUser['full_name'].split(' ')[1][0] + '. ' + informationUser['full_name'].split(' ')[2][0] + '.' }}</h1>
+      <a href="/logout" class="logout">Выход</a>
+    </div>
+    <div class="menu-user">
+      <router-link to="/profile" class="personal">Записи на прием </router-link>
+    </div>
+    <div class="records_table">
+      <div class="row">
+        <p class="header" style="width: 30px">№</p>
+        <p class="header header-big">ФИО</p>
+        <p class="header" style="width: 50px;">Дата</p>
+        <p class="header" style="width: 70px;">Время</p>
+      </div>
+      <div class="row" v-for="(date, index) in doctorRecords" style="margin-bottom: 19px">
+        <p class="content" style="width: 30px">{{index + 1}}</p>
+        <p class="content header-big">{{date['name']}}</p>
+        <p class="content" style="width: 50px;">{{date['date'].split('-')[2] + '.' + date['date'].split('-')[1]}}</p>
+        <p class="content" style="width: 70px;">{{date['time']}}</p>
       </div>
     </div>
   </section>
@@ -31,7 +54,8 @@ export default defineComponent(
     {
       data: () => {
         return {
-          informationUser: {}
+          informationUser: {},
+          doctorRecords: []
         }
       },
       mounted() {
@@ -51,6 +75,14 @@ export default defineComponent(
           let year = date.getFullYear()
 
           this.informationUser['birthday_str'] = `${strDay}.${strMonth}.${year}`
+
+          if(this.informationUser['isDoctor']) {
+            axios.get(`/getActiveDoctorRecords/${this.informationUser['doctor_id']}`).then(resp => {
+              this.doctorRecords = resp.data
+
+              console.log(this.doctorRecords)
+            })
+          }
         })
       }
     }
@@ -121,5 +153,41 @@ export default defineComponent(
   font-size: 22px;
   font-weight: 500;
   color: #0F2B56;
+}
+
+.user .records_table{
+  width: 700px;
+  padding: 35px 42px;
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+  background-color: #ffffff;
+  margin-top: 24px;
+  border-radius: 12px;
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
+
+}
+
+.user .records_table .row{
+  display: flex;
+  gap: 75px;
+}
+
+.user .records_table .row .header{
+  margin: 0;
+  color: #719FE7;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.user .records_table .row .header-big{
+  width: 182px;
+}
+
+.user .records_table .row .content{
+  margin: 0;
+  color: #042555;
+  font-size: 18px;
+  font-weight: 500;
 }
 </style>

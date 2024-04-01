@@ -2,19 +2,19 @@
   <section class="container">
     <div class="doctors"><h1>Наши врачи</h1>
       <div class="menu">
-        <router-link to="/therapist" class="unit">
+        <router-link to="/therapist" class="unit ">
           <img src="/public/images/Checkup.png" alt="">
           <p>Терапевт</p>
         </router-link>
-        <router-link to="/gynecologist" class="unit">
+        <router-link to="/gynecologist" class="unit ">
           <img src="/public/images/Uterus.png" alt="">
           <p>Гинеколог</p>
         </router-link>
-        <router-link to="/cardiologist" class="unit">
+        <router-link to="/cardiologist" class="unit ">
           <img src="/public/images/Heart.png" alt="">
           <p>Кардиолог</p>
         </router-link>
-        <router-link to="/gastroenterologist" class="unit">
+        <router-link to="/gastroenterologist" class="unit ">
           <img src="/public/images/Stomach.png" alt="">
           <p>Гастроэнтеролог</p>
         </router-link>
@@ -30,14 +30,13 @@
       </div>
     </div>
     <div class="list-doctors">
-      <div class="card">
+      <div class="card" v-for="(doctor, doctorId) in doctors">
         <div class="doctor">
-          <img :src="doctor['image']" alt="">
+          <img :src="`storage/uploads/${doctor['image']}`" alt="">
           <div class="info">
             <p class="name">{{ doctor['full_name'] }}</p>
             <div class="qualification">
               <p class="qualif">{{doctor['type_name']}}</p>
-              <p class="qualification-dop">главный врач</p>
             </div>
             <div class="experience">
               <p class="number">{{ doctor['exp'] }}</p>
@@ -46,13 +45,24 @@
           </div>
         </div>
         <div class="record">
-
-          <button type="button" form="record-form" v-on:click="createRecord" v-if="inforamtionUser">Записаться</button>
+          <button type="submit" :form="`record-form${doctorId}`" v-if="inforamtionUser && !inforamtionUser['isAdmin'] && !inforamtionUser['isDoctor']">Записаться</button>
           <div class="date-time">
-            <form action="" id="record-form" method="post" class="date">
+            <form action="/createTicket" :id="`record-form${doctorId}`" method="post" class="date">
               <input type="hidden" name="_token" :value="codeToken">
-              <input v-for="date in dates" v-on:click="changeDate" class="date-btn" type="button" :value="date[0]['date']">
+              <div class="date-top" v-for="(date, index) in dates[doctorId]">
+                <input v-on:click="changeDate" :id="index" :class="`date-btn ${doctorId}`" type="button" :value="date[0]['date']">
+              </div>
+              <input type="text" name="time" :class="`ticket_time${doctorId}`" hidden="hidden">
+              <input type="text" name="date" :class="`ticket_date${doctorId}`" hidden="hidden">
+              <input type="text" name="doctor" class="ticket_doctor" hidden="hidden" :value="doctor['id']">
+              <input type="text" name="user" class="ticket_user" hidden="hidden" :value="inforamtionUser['id']">
             </form>
+            <div class="times" :id="`times${index}`" v-for="(date, index) in dates[doctorId]">
+              <div v-for="time in date[0]['times']">
+                <input :class="`date-btn time-btn ${doctorId}`" type="button" :id="time['time_id']" v-on:click="changeTime" :value="time['time']" v-if="!time['busy']">
+                <input class="date-btn blocked-btn" type="button" :value="time['time']" v-else>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -68,7 +78,7 @@ import axios from "axios";
 export default defineComponent({
   data: () => {
     return {
-      doctor: {},
+      doctors: [],
       dates: [],
       currentDate: '',
       codeToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -76,11 +86,18 @@ export default defineComponent({
     }
   },
   mounted() {
-    axios.get('/getDoctor/5').then(response => {this.doctor = response.data})
-    axios.get('/getDates/5').then(response =>
+    axios.get('/getDoctorWithType/5').then(response =>
     {
-      this.dates = response.data
+      this.doctors = response.data
+
+      this.doctors.forEach(value => {
+        axios.get(`/getDates/${value['id']}`).then(resp =>
+        {
+          this.dates.push(resp.data)
+        })
+      })
     })
+
     axios.get('/user').then(response => {this.inforamtionUser = response.data})
 
   },
@@ -88,37 +105,44 @@ export default defineComponent({
     changeDate(e) {
       let allBtns = document.querySelectorAll('.date-btn')
       let current = e.target
+      let date = current.id
+      let dateInput = document.querySelector(`.ticket_date${current.classList[1]}`)
 
       for(let i = 0; i < allBtns.length; i++)
       {
         allBtns[i].classList.remove('active-btn')
-        allBtns[i].name = ''
       }
 
-      current.name = 'date'
+      current.classList.add('active-btn')
+
+      dateInput.value = date
+
+      this.selectTime(date)
+    },
+    selectTime(index){
+      let timesBlock = document.querySelector(`#times${index}`);
+      let timesBlocks = document.querySelectorAll('.times');
+
+      timesBlocks.forEach(value => {
+        value.style.display = 'none';
+      })
+
+      timesBlock.style.display = 'flex';
+    },
+    changeTime(e){
+      let allBtns = document.querySelectorAll('.time-btn')
+      let current = e.target
+      let time = current.id
+      let timeInput = document.querySelector(`.ticket_time${current.classList[2]}`)
+
+      for(let i = 0; i < allBtns.length; i++)
+      {
+        allBtns[i].classList.remove('active-btn')
+      }
+
+      timeInput.value = time
 
       current.classList.add('active-btn')
-    },
-    async createRecord(){
-      let token = document.getElementsByName('_token')[0].value
-      let date = document.getElementsByName('date')[0].value
-
-      axios({
-        method: "POST",
-        url: '/record',
-        data: {
-          _token: token,
-          date,
-          doctor_id: 5
-        }
-      })
-          .then(response =>
-          {
-            console.log(response)
-          })
-          .catch(error => {
-            console.log(error)
-          })
     }
   }
 });
@@ -233,12 +257,25 @@ export default defineComponent({
   background-color: #719FE7;
   box-shadow: 0 1px 0 1px rgb(33 106 210);
 }
+
 .container .list-doctors .card .record .date-time{
   display: flex;
   flex-direction: column;
   gap: 7px;
-
 }
+
+.container .list-doctors .card .record .date-time .times{
+  display: none;
+  gap: 5px;
+  flex-wrap: wrap;
+  max-width: 417px;
+}
+
+.container .list-doctors .card .record .date-time .times .blocked-btn{
+  background-color: #F5F5F5;
+  color: #C4C4C4;
+}
+
 .container .list-doctors .card .record .date-time input{
   width: 79px;
   padding: 6px 18px;
@@ -251,11 +288,12 @@ export default defineComponent({
 .container .list-doctors .card .record .date-time .date{
   display: flex;
   gap: 7px;
-
+  justify-content: center;
 }
-.container .list-doctors .card .record .date-time .time{
+
+.container .list-doctors .card .record .date-time .date .date-top{
   display: flex;
-  gap: 7px;
+  gap: 5px;
 }
 
 .container .doctors .menu .active{
@@ -263,6 +301,10 @@ export default defineComponent({
 }
 
 .container .list-doctors .card .record .date-time .date .active-btn{
+  background-color: #80B4FF;
+}
+
+.container .list-doctors .card .record .date-time .times .active-btn{
   background-color: #80B4FF;
 }
 </style>
